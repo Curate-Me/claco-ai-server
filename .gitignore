@@ -1,0 +1,16 @@
+/__pycache__
+/api/__pycache__
+/core/__pycache__
+/core/config.py
+/db/__pycache__
+/models/__pycache__
+/schemas/__pycache__
+/services/__pycache__
+/services/tf_idf/__pycache__
+*.csv
+secrets.json
+.DS_Store
+core/config.py
+core/config.py
+core/application.yaml
+.env
