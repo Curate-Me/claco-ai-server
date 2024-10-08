@@ -17,11 +17,9 @@ def run_ocr(image_url):
 
         cleaned_text = re.sub(r'\s+', '', text)
 
-        # Return a dictionary instead of a JSON string
         return {"extracted_text": cleaned_text}
 
     except Exception as e:
-        # Return a dictionary with error message
         return {"error": str(e)}
 
 if __name__ == '__main__':
