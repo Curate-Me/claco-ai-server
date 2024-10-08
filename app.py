@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from models.ocr import run_ocr  
 from models.clova import CompletionExecutor 
-import os
 
 app = Flask(__name__)
 

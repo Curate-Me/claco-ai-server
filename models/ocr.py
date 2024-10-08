@@ -3,7 +3,6 @@ from PIL import Image
 import pytesseract
 from io import BytesIO
 import re
-import json
 import sys
 
 def run_ocr(image_url):
