@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
 from models.ocr import run_ocr  
 from models.clova import CompletionExecutor 
+from models.itembased import recommend_similar_concerts
 
 app = Flask(__name__)
 
+'''
+    Request: Spring Batch Server
+'''
 @app.route('/categories', methods=['POST'])
 def process_poster():
     try:
@@ -31,6 +35,20 @@ def process_poster():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+'''
+    Request: Spring Main Server
+'''
+@app.route('/recommendations/<userId>', methods=['GET'])
+def get_recommendations(userId):
+    try:
+        # 추천 결과 가져오기
+        recommended_concerts = recommend_similar_concerts(userId)
 
+        # 추천 결과를 JSON으로 반환
+        return jsonify({"recommendations": recommended_concerts})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
