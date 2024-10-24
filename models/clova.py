@@ -15,11 +15,13 @@ class CompletionExecutor:
                 "role": "system",
                 "content": (
                     "너는 공연 포스터 설명을 분석하는 시스템이다. 사용자가 제공한 공연 포스터 설명을 바탕으로 "
-                    "아래 성격 중 각각 두 가지 성격에서 하나씩 선택하여 총 5가지를 분석해야 한다. 선택된 성격은 "
-                    "JSON 형식으로 리스트에 넣어서 반환해야 한다."
-                    "예시로는 categories :[성격 5가지]"
+                    "아래 성격 중 각각 두 가지 대조되는 성격에서 하나씩 선택하여 총 5가지를 선택해야 한다."
+                    "또한 선택된 5가지의 성격들에 대해 각각 0.1이상 1이하 사이의 점수를 가져서 반환해야한다. 1에 가까울수록 그 성격이 강한것 0.1로 갈수록 낮은것"
+                    "여기서 둘중 낮은 값을 갖는 성격은 제외하고 보내줘"
+                    "결과값은 JSON 형식으로 리스트에 넣어서 반환해야 한다."
+                    "성격과 점수는 반드시 다음 형식을 따라야 한다: 'categories': [{ 'name': '성격', 'score': 점수 }, ...]. "
                     "\n\n"
-                    "1. 웅장한 vs 섬세한\n"
+                    "1. 웅장한 vs 섬세한\n()"
                     "   웅장한: 큰 규모의 오케스트라나 무대 장치, 강렬한 감정이 느껴지는 공연.\n"
                     "   섬세한: 작은 규모의 연주나 무대, 미세한 감정의 변화와 정교함이 돋보이는 공연.\n"
                     "2. 고전적인 vs 현대적인\n"
@@ -77,21 +79,30 @@ class CompletionExecutor:
                                 response_content = parsed_data['message']['content']
                         except json.JSONDecodeError:
                             continue  
-
+        print(response_content)
         analysis_result = self.extract_analysis(response_content)
         return analysis_result
 
     def extract_analysis(self, content):
-        json_start = content.find('{')
-        json_end = content.find('}') + 1
-        
-        if json_start != -1 and json_end != -1:
-            json_str = content[json_start:json_end]
+        try:
+            categories_start = content.find('categories')
+            if categories_start == -1:
+                return {"error": "Categories not found"}
 
-            try:
-                analysis_dict = json.loads(json_str)
-                return analysis_dict
-            except json.JSONDecodeError:
-                return {"error": "Failed to parse analysis JSON"}
-        
-        return {"error": "No valid JSON found in response"}
+            list_start = content.find('[', categories_start)
+            list_end = content.find(']', list_start) + 1
+
+            if list_start == -1 or list_end == -1:
+                return {"error": "Failed to find the categories list"}
+
+            categories_str = content[list_start:list_end]
+
+            categories_list = json.loads(categories_str)
+
+            return categories_list
+
+        except json.JSONDecodeError:
+            return {"error": "Failed to parse categories JSON"}
+
+
+
