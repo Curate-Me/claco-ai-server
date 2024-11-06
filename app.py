@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from models.ocr import run_ocr  
 from models.clova import CompletionExecutor 
 from models.itembased import recommend_similar_concerts
+from services.UserService import update_user_preferences
 
 app = Flask(__name__)
 
@@ -49,6 +50,33 @@ def get_recommendations(userId):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-     
+    
+'''
+    Request: Spring Main Server
+    유저 취향 csv 파일 등록
+'''
+@app.route('/users/preferences', methods=['POST'])
+def post_preferences():
+    try:
+        data = request.get_json()
+
+        user_id = data.get("userId")
+        preferences = data.get("preferences")
+
+        if not user_id or not preferences:
+            return jsonify({"error": "userId and preferences are required"}), 400
+
+        response = update_user_preferences(user_id, preferences)
+
+        if "error" in response:
+            return jsonify(response), 404  
+        
+        return jsonify(response), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)
