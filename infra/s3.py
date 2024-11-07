@@ -32,3 +32,18 @@ def get_csv_from_s3(bucket_name, folder_name, file_name):
     except Exception as e:
         print(f"Error: {e}")
         return None
+    
+def upload_csv_to_s3(bucket_name, folder_name, file_name, csv_data):
+    try:
+        key = f"{folder_name}/{file_name}"  
+
+        csv_bytes = csv_data.encode('utf-8')
+
+        s3_client.put_object(Bucket=bucket_name, Key=key, Body=csv_bytes)
+
+        print(f"File {file_name} successfully uploaded to {bucket_name}/{folder_name}")
+        return True
+    except Exception as e:
+        print(f"Error uploading file to S3: {e}")
+        return False
+
