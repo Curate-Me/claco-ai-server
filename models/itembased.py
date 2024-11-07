@@ -16,9 +16,9 @@ def read_concert_data(bucket_name, folder_name, concert_file):
 
     # CSV 데이터 파싱
     for row in csv_data:
-        concert_name = row['Performance Id']
+        concert_name = row['concertId']
         # 공연 특성 값들을 가져와서 float 리스트로 변환
-        features = [float(row[col]) for col in row if col != 'Performance Id']
+        features = [float(row[col]) for col in row if col != 'concertId']
         concerts.append((concert_name, features))
     return concerts
 
@@ -33,9 +33,9 @@ def read_user_features(user_id, bucket_name, folder_name, user_file):
 
     # 사용자 ID에 해당하는 특성 값 추출
     for row in csv_data:
-        if row['User Id'] == user_id:
+        if row['userId'] == user_id:
             # 사용자 ID 제외하고 특성 값만 가져오기
-            user_features = [float(row[col]) for col in row if col != 'User Id']
+            user_features = [float(row[col]) for col in row if col != 'userId']
             return user_features
     return None
 

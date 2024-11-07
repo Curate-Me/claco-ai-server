@@ -49,6 +49,8 @@ def get_recommendations(userId):
         return jsonify({"recommendations": recommended_concerts})
 
     except Exception as e:
+        app.logger.error(f"Error in get_recommendations: {e}", exc_info=True)
+
         return jsonify({"error": str(e)}), 500
     
 '''
@@ -79,4 +81,4 @@ def post_preferences():
 
     
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=5000)
