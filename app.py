@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from models.ocr import run_ocr  
 from models.clova import CompletionExecutor 
-from models.userbased import recommend_similar_concerts_user
+from models.userbased import recommend_similar_concerts_user, recommend_similar_users
 from models.itembased import recommend_similar_concerts_item
 from services.UserService import update_user_preferences
 
@@ -40,7 +40,7 @@ def process_poster():
 
 '''
     Request: Spring Main Server
-    유저가 좋아할만한 공연 추천
+    추천 시스템1: 유저가 좋아할만한 공연 추천
 '''
 @app.route('/recommendations/users/<userId>', methods=['GET'])
 def get_recommendations_users(userId):
@@ -58,13 +58,31 @@ def get_recommendations_users(userId):
     
 '''
     Request: Spring Main Server
-    유저가 좋아요한 공연과 유사한 공연 추천
+    추천 시스템2: 유저가 좋아요한 공연과 유사한 공연 추천
 '''
 @app.route('/recommendations/items/<concertId>', methods=['GET'])
 def get_recommendations_items(concertId):
     try:
         # 추천 결과 가져오기
         recommended_concerts = recommend_similar_concerts_item(concertId)
+
+        # 추천 결과를 JSON으로 반환
+        return jsonify({"recommendations": recommended_concerts})
+
+    except Exception as e:
+        app.logger.error(f"Error in get_recommendations: {e}", exc_info=True)
+
+        return jsonify({"error": str(e)}), 500
+
+'''
+    Request: Spring Main Server
+    추천 시스템3: 유저가 좋아할만한 공연 추천
+'''
+@app.route('/recommendations/clacobooks/<userId>', methods=['GET'])
+def get_recommendations_clacobooks(userId):
+    try:
+        # 추천 결과 가져오기
+        recommended_concerts = recommend_similar_users(userId)
 
         # 추천 결과를 JSON으로 반환
         return jsonify({"recommendations": recommended_concerts})
