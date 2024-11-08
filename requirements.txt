@@ -1,0 +1,8 @@
+Flask
+numpy
+scikit-learn
+boto3
+python-dotenv
+requests
+Pillow
+pytesseract
