@@ -18,8 +18,17 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          # Create a unique tag using Git SHA
+          IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/claco-ai-app:${{ github.sha }}
+          
+          echo "Building Docker Image with tag $IMAGE_TAG..."
+          docker build -t $IMAGE_TAG .
+          
+          echo "Pushing Docker Image to Docker Hub..."
+          docker push $IMAGE_TAG
+          
+          # Save tag for deployment step
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
   deploy-to-ec2:
     name: Deploy to EC2
@@ -40,20 +49,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
           set -e
           
-          echo "Stopping container using port 5000..."
-          existing_container_id=\$(docker ps --format "{{.ID}} {{.Ports}}" | grep "0.0.0.0:5000" | awk '{print \$1}')
-          if [ -n "\$existing_container_id" ]; then
-            echo "Found container using port 5000. Stopping it..."
-            docker stop \$existing_container_id
-            docker rm \$existing_container_id
-          else
-            echo "No container is using port 5000."
-          fi
-          
           echo "Pulling the latest Docker image..."
           docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-          docker pull ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          docker pull $IMAGE_TAG
           
-          echo "Starting new container..."
-          docker run -d --name claco-ai-app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          echo "Starting new container with unique name..."
+          docker run -d --name claco-ai-app-${{ github.sha }} -p 5000:5000 $IMAGE_TAG
           EOF
