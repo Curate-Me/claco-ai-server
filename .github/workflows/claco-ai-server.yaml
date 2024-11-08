@@ -37,11 +37,11 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
           set -e
-
-          echo "Stopping container using port 5000 "
-          existing_container_id=\$(docker ps --filter "publish=5000" --format "{{.ID}}")
+          
+          echo "Stopping container using port 5000..."
+          existing_container_id=\$(docker ps --format "{{.ID}} {{.Ports}}" | grep "0.0.0.0:5000" | awk '{print \$1}')
           if [ -n "\$existing_container_id" ]; then
             echo "Found container using port 5000. Stopping it..."
             docker stop \$existing_container_id
@@ -49,11 +49,11 @@ jobs:
           else
             echo "No container is using port 5000."
           fi
-
+          
           echo "Pulling the latest Docker image..."
           docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
           docker pull ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
-
+          
           echo "Starting new container..."
           docker run -d --name claco-ai-app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
           EOF
