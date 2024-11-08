@@ -90,3 +90,37 @@ def recommend_similar_concerts_user(user_id, top_n=5):
     # 상위 N개의 공연 추천
     return recommendations[:top_n]
 
+
+def recommend_similar_users(target_user_id, top_n=1):
+    # S3 파일 경로 설정
+    user_file = 'users.csv'
+    bucket_name = 'claco-bucket'
+    folder_name = 'datasets'
+
+    # CSV 파일에서 모든 유저 데이터 가져오기
+    all_users = []
+    csv_data = get_csv_from_s3(bucket_name, folder_name, user_file)
+    for row in csv_data:
+        user_id = row['userId']
+        user_features = [float(row[col]) for col in row if col != 'userId']
+        all_users.append((user_id, user_features))
+
+    # 타겟 유저 특징 가져오기
+    target_features = read_user_features(target_user_id, bucket_name, folder_name, user_file)
+
+    # 유사도 계산 및 정렬
+    recommendations = []
+    for other_user_id, other_features in all_users:
+        if other_user_id == target_user_id:
+            continue
+
+        # 코사인 유사도 계산
+        similarity = cosine_similarity(np.array(target_features).reshape(1, -1), 
+                                      np.array(other_features).reshape(1, -1))[0][0]
+        recommendations.append((other_user_id, similarity))
+
+    # 유사도가 높은 순으로 정렬
+    recommendations.sort(key=lambda x: x[1], reverse=True)
+
+    # 상위 N명의 유사한 유저 추천
+    return recommendations[:top_n]
