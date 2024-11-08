@@ -39,8 +39,18 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
           set -e
-          
-          echo "Stopping and removing existing container..."
+
+          echo "Finding container using port 5000..."
+          CONTAINER_ID=\$(docker ps -q --filter "publish=5000")
+          if [ "\$CONTAINER_ID" ]; then
+            echo "Container using port 5000 found. Stopping and removing..."
+            docker stop \$CONTAINER_ID
+            docker rm \$CONTAINER_ID
+          else
+            echo "No container is using port 5000."
+          fi
+
+          echo "Stopping and removing existing container named 'claco-ai-app'..."
           if [ \$(docker ps -aq -f name=claco-ai-app) ]; then
             echo "Existing container found. Stopping and removing..."
             docker rm -f claco-ai-app
