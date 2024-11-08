@@ -18,8 +18,8 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/flask-app:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/flask-app:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
 
   deploy-to-ec2:
     name: Deploy to EC2
@@ -42,11 +42,11 @@ jobs:
 
           echo "Pulling the latest Docker image..."
           docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-          docker pull ${{ secrets.DOCKER_USERNAME }}/flask-app:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
 
           echo "Stopping old container..."
-          docker rm -f flask-app || true
+          docker rm -f claco-ai-app || true
 
           echo "Starting new container..."
-          docker run -d --name flask-app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/flask-app:latest
+          docker run -d --name claco-ai-app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
           EOF
