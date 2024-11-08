@@ -53,5 +53,5 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
           
           echo "Starting new container..."
-          docker run -d --name claco-ai-app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          docker run -d --name claco-ai-app --env-file .env -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
           EOF
