@@ -40,7 +40,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           set -e
 
-          echo "Stopping container using port 5000 (if exists)..."
+          echo "Stopping container using port 5000 "
           existing_container_id=\$(docker ps --filter "publish=5000" --format "{{.ID}}")
           if [ -n "\$existing_container_id" ]; then
             echo "Found container using port 5000. Stopping it..."
