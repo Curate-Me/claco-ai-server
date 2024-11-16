@@ -83,6 +83,63 @@ class CompletionExecutor:
         analysis_result = self.extract_analysis(response_content)
         return analysis_result
 
+    def execute_summary(self, extracted_text):
+        preset_text = [
+            {
+                "role": "system",
+                "content": (
+                   "너는 지금부터 주어지는 내용을 바탕으로 공연 내용을 요약해야해. "
+                    "평균 50자에서 100자 사이로 요약을 해줘야하고, "
+                    "관람객들이 흥미를 느낄 수 있도록 작성해줘."
+                    "또한 답변 형식이 아닌 그냥 딱 요약만해서 전달해줘."
+                    "또한 무조건 존댓말로 보내줘."
+                        )
+            }
+            ,
+            {
+                "role": "user",
+                "content": f"이 공연의 내용을 요약해줘: '{extracted_text}'"
+            }
+        ]
+
+        request_data = {
+            'messages': preset_text,
+            'topP': 0.8,
+            'topK': 0,
+            'maxTokens': 256,
+            'temperature': 0.5,
+            'repeatPenalty': 5.0,
+            'stopBefore': [],
+            'includeAiFilters': True,
+            'seed': 0
+        }
+
+        headers = {
+            'X-NCP-CLOVASTUDIO-API-KEY': self._api_key,
+            'X-NCP-APIGW-API-KEY': self._api_key_primary_val,
+            'X-NCP-CLOVASTUDIO-REQUEST-ID': self._request_id,
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept': 'text/event-stream'
+        }
+
+        response_content = ''
+        print(response_content)
+        with requests.post(self._host + '/testapp/v1/chat-completions/HCX-DASH-001',
+                           headers=headers, json=request_data, stream=True) as r:
+            for line in r.iter_lines():
+                if line:
+                    decoded_line = line.decode("utf-8")
+                    if 'data:' in decoded_line:
+                        json_data = decoded_line.split('data:')[1].strip()
+                        try:
+                            parsed_data = json.loads(json_data)
+                            if 'message' in parsed_data and 'content' in parsed_data['message']:
+                                response_content = parsed_data['message']['content']
+                        except json.JSONDecodeError:
+                            continue
+
+        return response_content
+
     def extract_analysis(self, content):
         try:
             categories_start = content.find('categories')
