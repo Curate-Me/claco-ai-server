@@ -92,11 +92,11 @@ def get_recommendations_users(userId):
     Request: Spring Main Server
     추천 시스템2: 유저가 좋아요한 공연과 유사한 공연 추천
 '''
-@app.route('/recommendations/items/<concertId>', methods=['GET'])
-def get_recommendations_items(concertId):
+@app.route('/recommendations/items/<concertId>/<topn>', methods=['GET'])
+def get_recommendations_items(concertId, topn):
     try:
         # 추천 결과 가져오기
-        recommended_concerts = recommend_similar_concerts_item(concertId)
+        recommended_concerts = recommend_similar_concerts_item(concertId,topn)
 
         # 추천 결과를 JSON으로 반환
         return jsonify({"recommendations": recommended_concerts})
