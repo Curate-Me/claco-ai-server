@@ -5,6 +5,8 @@ from models.userbased import read_concert_data, read_specific_concert_data
 
 def recommend_similar_concerts_item(concert_id, top_n):
 
+    top_n = int(top_n)
+
     # S3 파일 경로 설정
     concert_file = 'concerts.csv'
     bucket_name = 'claco-bucket'
