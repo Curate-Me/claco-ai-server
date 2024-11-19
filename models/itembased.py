@@ -3,7 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from infra.s3 import get_csv_from_s3
 from models.userbased import read_concert_data, read_specific_concert_data
 
-def recommend_similar_concerts_item(concert_id, top_n=2):
+def recommend_similar_concerts_item(concert_id, top_n):
 
     # S3 파일 경로 설정
     concert_file = 'concerts.csv'
