@@ -57,7 +57,9 @@ def read_user_features(user_id, bucket_name, folder_name, user_file):
             return user_features
     return None
 
-def recommend_similar_concerts_user(user_id, top_n=5):
+def recommend_similar_concerts_user(user_id, top_n):
+
+    top_n = int(top_n)
 
     # S3 파일 경로 설정
     user_file = 'users.csv'

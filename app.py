@@ -78,7 +78,7 @@ def process_poster_summary():
 def get_recommendations_users(userId, topn):
     try:
         # 추천 결과 가져오기
-        recommended_concerts = recommend_similar_concerts_user(userId)
+        recommended_concerts = recommend_similar_concerts_user(userId, topn)
 
         # 추천 결과를 JSON으로 반환
         return jsonify({"recommendations": recommended_concerts})
