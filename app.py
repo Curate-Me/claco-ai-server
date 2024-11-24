@@ -7,9 +7,10 @@ from services.UserService import update_user_preferences
 from infra.s3 import upload_poster_to_s3
 import os
 import requests
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 '''
     Request: Spring Batch Server
