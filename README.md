@@ -1,2 +1,2 @@
 # claco-ai-server
-AI Server with Flask Server
+KUSITMS 30기 프로젝트 Claco AI 서버 레포지토리
