@@ -4,6 +4,9 @@ from models.clova import CompletionExecutor
 from models.userbased import recommend_similar_concerts_user, recommend_similar_users
 from models.itembased import recommend_similar_concerts_item
 from services.UserService import update_user_preferences
+from infra.s3 import upload_poster_to_s3
+import os
+import requests
 
 
 app = Flask(__name__)
@@ -149,6 +152,48 @@ def post_preferences():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/download/posters', methods=['POST'])
+def download_and_upload_image():
+    try:
+        # 요청 데이터 가져오기
+        data = request.get_json()
+        image_url = data.get('image_url')
+        bucket_name = 'claco-bucket'
+        folder_name = 'posters'
+
+        if not image_url or not bucket_name:
+            return jsonify({"error": "image_url and bucket_name are required"}), 400
+
+        # 이미지 다운로드
+        response = requests.get(image_url)
+        response.raise_for_status()  # 상태 코드 확인
+
+        # 파일 이름 추출 및 저장
+        file_name = image_url.split("/")[-1]
+        with open(file_name, 'wb') as file:
+            file.write(response.content)
+
+        # S3에 업로드
+        s3_url = upload_poster_to_s3(bucket_name, folder_name, file_name)
+
+        if not s3_url:
+            return jsonify({"error": "Failed to upload file to S3"}), 500
+
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
+        # 결과 반환
+        return jsonify({
+            "message": "Image successfully uploaded",
+            "s3_url": s3_url
+        }), 200
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Failed to download image: {str(e)}"}), 500
+
+    except Exception as e:
+        # 오류 메시지를 문자열로 변환
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
     
 if __name__ == '__main__':

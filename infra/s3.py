@@ -47,3 +47,19 @@ def upload_csv_to_s3(bucket_name, folder_name, file_name, csv_data):
         print(f"Error uploading file to S3: {e}")
         return False
 
+def upload_poster_to_s3(bucket_name, folder_name, file_name):
+    try:
+        key = f"{folder_name}/{file_name}"  # S3 키 생성
+
+        # 파일 열기
+        with open(file_name, 'rb') as file_data:
+            s3_client.upload_fileobj(file_data, bucket_name, key)
+
+        # S3 URL 반환
+        s3_url = f"https://{bucket_name}.s3.{s3_client.meta.region_name}.amazonaws.com/{key}"
+        return s3_url  # 문자열로 반환
+
+    except Exception as e:
+            print(f"Error uploading file to S3: {e}")
+            return False
+

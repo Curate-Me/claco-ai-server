@@ -15,7 +15,7 @@ def run_ocr(image_url):
         img = Image.open(BytesIO(response.content))
 
         # Tesseract OCR 실행
-        text = pytesseract.image_to_string(img, lang="kor")
+        text = pytesseract.image_to_string(img, lang="kor+eng")
 
         # 텍스트 정리 (공백 제거)
         cleaned_text = re.sub(r'\s+', '', text)
