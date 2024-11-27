@@ -1,0 +1,67 @@
+name: CI/CD for Flask App with Docker and EC2
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-push-image:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+
+  deploy-to-ec2:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << EOF
+          set -e
+
+          echo "Finding container using port 5000..."
+          CONTAINER_ID=\$(docker ps -q --filter "publish=5000")
+          if [ "\$CONTAINER_ID" ]; then
+            echo "Container using port 5000 found. Stopping and removing..."
+            docker stop \$CONTAINER_ID
+            docker rm \$CONTAINER_ID
+          else
+            echo "No container is using port 5000."
+          fi
+
+          echo "Stopping and removing existing container named 'claco-ai-app'..."
+          if [ \$(docker ps -aq -f name=claco-ai-app) ]; then
+            echo "Existing container found. Stopping and removing..."
+            docker rm -f claco-ai-app
+          else
+            echo "No existing container with name 'claco-ai-app'."
+          fi
+          
+          echo "Pulling the latest Docker image..."
+          docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+          docker pull ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          
+          echo "Starting new container..."
+          docker run -d --name claco-ai-app --env-file .env -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/claco-ai-app:latest
+          EOF
