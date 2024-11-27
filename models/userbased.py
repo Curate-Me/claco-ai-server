@@ -93,7 +93,7 @@ def recommend_similar_concerts_user(user_id, top_n):
     return recommendations[:top_n]
 
 
-def recommend_similar_users(target_user_id, top_n=1):
+def recommend_similar_users(target_user_id, top_n=3):
     # S3 파일 경로 설정
     user_file = 'users.csv'
     bucket_name = 'claco-bucket'
